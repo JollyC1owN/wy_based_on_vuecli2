@@ -9,10 +9,11 @@
           :placeholder="initSearchData.defaultKeyword.keyword"
           v-model="searchText"
         />
+        <i class="close" v-if="searchText.length>0" @click="cancelSearch">×</i>
       </div>
       <button @click="$router.back()">取消</button>
     </div>
-    <div class="search-list">
+    <div class="search-list" v-if="!this.searchText.trim().length>0">
       <p>热门搜索</p>
       <ul>
         <li
@@ -24,11 +25,8 @@
         </li>
       </ul>
     </div>
-    <ul class="searchResultList">
-      <li>555</li>
-      <li>555</li>
-      <li>555</li>
-      <li>555</li>
+    <ul class="searchResultList" v-else>
+      <li v-for="(item, index) in searchResult" :key="index">{{item}}</li>
     </ul>
   </section>
 </template>
@@ -40,13 +38,27 @@ export default {
       searchText: ''
     }
   },
+  methods: {
+    cancelSearch() {
+      this.searchText = ''
+    }
+  },
   mounted() {
     this.$store.dispatch('getInitSearch')
   },
   computed: {
     ...mapState({
-      initSearchData: state => state.search.initSearchData
+      initSearchData: state => state.search.initSearchData,
+      searchResult: state => state.search.searchResult
     })
+  },
+  watch: {
+    searchText() {
+      if (this.searchText.trim().length > 0) {
+        let text = this.searchText.trim()
+        this.$store.dispatch('getSearchResult', text)
+      }
+    }
   }
 }
 </script>
@@ -82,6 +94,12 @@ export default {
         background-color #F4F4F4
         outline none
         border-width 0
+
+      .close
+        display inline-block
+        width 50px
+        height 50px
+        line-height 56px
 
     button
       flex 1
